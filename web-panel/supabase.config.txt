@@ -1,0 +1,8 @@
+Supabase Configuration for Web Panel
+=====================================
+
+Create a file named ".env" in the web-panel folder with the following content:
+
+VITE_SUPABASE_URL=https://yoprqlfctuwifbvwrirn.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvcHJxbGZjdHV3aWZidndyaXJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjYwMjAsImV4cCI6MjA3NjY0MjAyMH0.MvdPe53J78QuqFoEY4kYSkLIXZ3OrxgAfHgquJIq2nI
+

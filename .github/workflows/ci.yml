@@ -1,0 +1,77 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # Mobile App Tests
+  mobile-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: mobile-app/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: mobile-app
+        run: npm ci
+      
+      - name: Type check
+        working-directory: mobile-app
+        run: npx tsc --noEmit
+
+  # Web Panel Tests & Build
+  web-panel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: web-panel/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: web-panel
+        run: npm ci
+      
+      - name: Type check
+        working-directory: web-panel
+        run: npx tsc --noEmit
+      
+      - name: Build
+        working-directory: web-panel
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+  # Supabase Edge Functions
+  edge-functions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+      
+      - name: Check Edge Functions
+        working-directory: supabase/functions
+        run: |
+          for dir in */; do
+            echo "Checking $dir"
+            deno check "${dir}index.ts"
+          done
+
