@@ -977,6 +977,57 @@ def get_students():
         logger.error(f"Get students error: {e}")
         return jsonify({'success': False, 'message': str(e), 'students': []}), 500
 
+
+@app.route('/api/students/dump', methods=['GET'])
+@jwt_required()
+@require_role('admin', 'instructor')
+def dump_students():
+    """Export/dump all student information (JSON or CSV)."""
+    try:
+        if not DATABASE_AVAILABLE or not db:
+            return jsonify({'success': False, 'message': 'Database not available'}), 503
+
+        students = db.get_students() or []
+        export_format = (request.args.get('format') or 'json').strip().lower()
+
+        if export_format == 'csv':
+            import csv
+            import io
+            from flask import Response
+            buffer = io.StringIO()
+            if not students:
+                writer = csv.writer(buffer)
+                writer.writerow(['student_id', 'name', 'image', 'push_token', 'registered_at', 'updated_at'])
+            else:
+                writer = csv.DictWriter(
+                    buffer,
+                    fieldnames=['student_id', 'name', 'image', 'push_token', 'registered_at', 'updated_at'],
+                    extrasaction='ignore'
+                )
+                writer.writeheader()
+                for s in students:
+                    row = {k: (s.get(k) or '') for k in writer.fieldnames}
+                    writer.writerow(row)
+            return Response(
+                buffer.getvalue(),
+                mimetype='text/csv',
+                headers={'Content-Disposition': 'attachment; filename=students_dump.csv'}
+            )
+
+        # JSON dump (default)
+        dump = {
+            'success': True,
+            'dump': {
+                'students': students,
+                'count': len(students),
+                'dumped_at': datetime.now().isoformat(),
+            }
+        }
+        return jsonify(dump)
+    except Exception as e:
+        logger.error(f"Dump students error: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/api/attendance/records', methods=['GET'])
 @jwt_required()
 @require_role('admin', 'instructor')

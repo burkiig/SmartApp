@@ -76,6 +76,11 @@ requirements.txt        → Python bağımlılıkları
 templates/              → HTML şablonları
 static/                 → Statik dosyalar ve veriler
 
+Veritabanı: Varsayılan JSON (static/). PostgreSQL veya MongoDB kullanmak için
+.env içinde USE_POSTGRESQL=true veya USE_MONGODB=true yapın.
+PostgreSQL: DATABASE_URL ayarlayın; şema ilk bağlantıda otomatik oluşturulur.
+Mevcut veriyi PostgreSQL'e taşımak için: python database/migrate_to_postgres.py
+
 WEB PANEL:
 ----------
 web-panel/              → React web uygulaması

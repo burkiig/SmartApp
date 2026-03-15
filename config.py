@@ -21,8 +21,15 @@ class Config:
     STUDENTS_DB = os.path.join(STATIC_DIR, 'students.json')
     ATTENDANCE_RECORDS = os.path.join(ATTENDANCE_DIR, 'records.json')
     
-    # Database Mode
+    # Database Mode (only one active: PostgreSQL > MongoDB > JSON)
+    USE_POSTGRESQL = os.environ.get('USE_POSTGRESQL', 'false').lower() == 'true'
     USE_MONGODB = os.environ.get('USE_MONGODB', 'false').lower() == 'true'
+    
+    # PostgreSQL ayarları
+    DATABASE_URL = os.environ.get(
+        'DB_URL',
+        os.environ.get('DATABASE_URL', 'postgresql://localhost:5432/smart_attendance')
+    )
     
     # MongoDB ayarları
     MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/')
