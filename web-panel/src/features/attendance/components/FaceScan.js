@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Webcam from 'react-webcam';
-import { config } from '../../../shared/config/env';
-import axios from 'axios';
+import apiClient from '../../../shared/services/apiClient';
 import './FaceScan.css';
 
 export const FaceScan = ({ onClose }) => {
@@ -31,13 +30,13 @@ export const FaceScan = ({ onClose }) => {
             setIsScanning(true);
             setMessage({ text: 'Scanning...', type: 'info' });
 
-            const response = await axios.post(`${config.API_URL}/api/attendance`, {
+            const response = await apiClient.post('/attendance', {
                 image: imageSrc
             });
 
-            if (response.data.success) {
+            if (response.success) {
                 setMessage({
-                    text: `✓ Attendance marked for ${response.data.student_name || 'student'}`,
+                    text: `✓ Attendance marked for ${response.student_name || 'student'}`,
                     type: 'success'
                 });
 
@@ -46,14 +45,14 @@ export const FaceScan = ({ onClose }) => {
                 }, 2000);
             } else {
                 setMessage({
-                    text: response.data.message || 'Face not recognized',
+                    text: response.message || 'Face not recognized',
                     type: 'error'
                 });
             }
         } catch (error) {
             console.error('Face scan error:', error);
             setMessage({
-                text: error.response?.data?.message || 'Failed to mark attendance',
+                text: error.message || 'Failed to mark attendance',
                 type: 'error'
             });
         } finally {

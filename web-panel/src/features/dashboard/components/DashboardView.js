@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { config } from '../../../shared/config/env';
+import apiClient from '../../../shared/services/apiClient';
 import { ClassDetails } from '../../attendance/components/ClassDetails';
 import './DashboardView.css';
 
@@ -25,12 +24,12 @@ function DashboardView() {
         try {
             setLoading(true);
             const [studentsRes, recordsRes] = await Promise.all([
-                axios.get(`${config.API_URL}/api/students`),
-                axios.get(`${config.API_URL}/api/attendance/records`)
+                apiClient.get('/students'),
+                apiClient.get('/attendance/records')
             ]);
 
-            const students = studentsRes.data.students || [];
-            const records = recordsRes.data.records || [];
+            const students = studentsRes.students || [];
+            const records = recordsRes.records || [];
 
             // Calculate statistics
             const totalStudents = students.length;

@@ -92,12 +92,15 @@ export const LoginForm = ({ onLogin, loading, error }) => {
         </div>
 
         <div className="forgot-password-wrapper">
-          <a href="#" className="forgot-password-link" onClick={(e) => {
-            e.preventDefault();
-            alert('Şifre sıfırlama özelliği yakında eklenecek!');
-          }}>
+          <button
+            type="button"
+            className="forgot-password-link"
+            onClick={() => {
+              alert('Şifre sıfırlama özelliği yakında eklenecek!');
+            }}
+          >
             Şifremi Unuttum?
-          </a>
+          </button>
         </div>
 
         <Button

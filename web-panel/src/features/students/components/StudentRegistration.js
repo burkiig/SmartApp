@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import Webcam from 'react-webcam';
-import axios from 'axios';
-import { config } from '../../../shared/config/env';
+import apiClient from '../../../shared/services/apiClient';
 import './StudentRegistration.css';
 
 function StudentRegistration() {
@@ -20,19 +19,19 @@ function StudentRegistration() {
         const imageSrc = webcamRef.current.getScreenshot();
 
         try {
-            const response = await axios.post(`${config.API_URL}/api/register`, {
+            const response = await apiClient.post('/register', {
                 student_id: studentId,
                 name: name,
                 image: imageSrc
             });
 
-            if (response.data.success) {
+            if (response.success) {
                 setMessage({ text: 'Öğrenci başarıyla kaydedildi!', type: 'success' });
                 setStudentId('');
                 setName('');
                 setShowCamera(false);
             } else {
-                setMessage({ text: response.data.message, type: 'error' });
+                setMessage({ text: response.message, type: 'error' });
             }
         } catch (error) {
             setMessage({ text: 'Kayıt sırasında hata oluştu', type: 'error' });

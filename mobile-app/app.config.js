@@ -36,6 +36,8 @@ export default {
     },
     web: {},
     plugins: [
+      "expo-router",
+      "expo-secure-store",
       [
         "expo-camera",
         {

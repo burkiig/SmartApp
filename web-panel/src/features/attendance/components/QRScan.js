@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
-import { config } from '../../../shared/config/env';
-import axios from 'axios';
+import apiClient from '../../../shared/services/apiClient';
 import './QRScan.css';
 
 export const QRScan = ({ onClose }) => {
@@ -29,13 +28,13 @@ export const QRScan = ({ onClose }) => {
 
             try {
                 // Parse QR code data (assuming format: student_id)
-                const response = await axios.post(`${config.API_URL}/api/attendance/qr`, {
+                const response = await apiClient.post('/attendance/qr', {
                     qr_data: decodedText
                 });
 
-                if (response.data.success) {
+                if (response.success) {
                     setMessage({
-                        text: `✓ Attendance marked for ${response.data.student_name || 'student'}`,
+                        text: `✓ Attendance marked for ${response.student_name || 'student'}`,
                         type: 'success'
                     });
 
@@ -46,7 +45,7 @@ export const QRScan = ({ onClose }) => {
                     }, 2000);
                 } else {
                     setMessage({
-                        text: response.data.message || 'Invalid QR code',
+                        text: response.message || 'Invalid QR code',
                         type: 'error'
                     });
                     setIsProcessing(false);
@@ -54,7 +53,7 @@ export const QRScan = ({ onClose }) => {
             } catch (error) {
                 console.error('QR scan error:', error);
                 setMessage({
-                    text: error.response?.data?.message || 'Failed to mark attendance',
+                    text: error.message || 'Failed to mark attendance',
                     type: 'error'
                 });
                 setIsProcessing(false);

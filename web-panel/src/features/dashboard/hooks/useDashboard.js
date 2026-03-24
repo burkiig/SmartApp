@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../../../shared/services/apiClient';
 
 export const useDashboard = () => {
   const [stats, setStats] = useState({
@@ -24,12 +24,12 @@ export const useDashboard = () => {
       setError(null);
 
       const [studentsRes, recordsRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/students'),
-        axios.get('http://localhost:5000/api/attendance/records')
+        apiClient.get('/students'),
+        apiClient.get('/attendance/records')
       ]);
 
-      const students = studentsRes.data.students || [];
-      const records = recordsRes.data.records || [];
+      const students = studentsRes.students || [];
+      const records = recordsRes.records || [];
 
       // Calculate statistics
       const totalStudents = students.length;

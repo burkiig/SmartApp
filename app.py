@@ -3,7 +3,7 @@ Smart Attendance System — Flask Application Factory
 
 Entry points:
     Development:   python app.py
-    Production:    gunicorn "app:create_app()" --workers 4 --bind 0.0.0.0:5000
+    Production:    gunicorn -c gunicorn.conf.py "app:create_app()"
 """
 
 import os

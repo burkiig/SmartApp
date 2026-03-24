@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+import apiClient from '../../../shared/services/apiClient';
 
 // Mock data fallback
 const mockStudents = [
@@ -30,9 +28,9 @@ export const useStudents = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${API_URL}/api/students`);
-      if (response.data.success) {
-        setStudents(response.data.students || []);
+      const response = await apiClient.get('/students');
+      if (response.success) {
+        setStudents(response.students || []);
       } else {
         setError('Failed to load students');
         // Use mock data on error
@@ -56,8 +54,8 @@ export const useStudents = () => {
   // Delete student
   const deleteStudent = useCallback(async (studentId) => {
     try {
-      const response = await axios.delete(`${API_URL}/api/students/${studentId}`);
-      if (response.data.success) {
+      const response = await apiClient.delete(`/students/${studentId}`);
+      if (response.success) {
         setStudents(prev => prev.filter(s => s.student_id !== studentId));
         return { success: true };
       }
