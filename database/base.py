@@ -172,6 +172,36 @@ class DatabaseAdapter(ABC):
         """Approve or reject an excuse"""
         pass
 
+    # ==================== ATTENDANCE STEPS (3-step flow state) ====================
+
+    @abstractmethod
+    def get_attendance_step(self, step_id: str) -> Optional[Dict[str, Any]]:
+        """Get a temporary attendance step record by ID."""
+        pass
+
+    @abstractmethod
+    def create_attendance_step(self, step_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new attendance step record."""
+        pass
+
+    @abstractmethod
+    def update_attendance_step(self, step_id: str, update_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Update fields on an existing attendance step (e.g. face_verified)."""
+        pass
+
+    @abstractmethod
+    def delete_attendance_step(self, step_id: str) -> bool:
+        """Delete a step record after QR verification completes."""
+        pass
+
+    @abstractmethod
+    def delete_expired_attendance_steps(self) -> int:
+        """
+        Delete all attendance step records whose expires_at is in the past.
+        Returns the number of deleted records.
+        """
+        pass
+
     # ==================== UTILITY ====================
 
     @abstractmethod

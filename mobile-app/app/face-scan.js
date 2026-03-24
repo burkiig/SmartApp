@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Camera } from 'expo-camera';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
@@ -19,16 +19,15 @@ const { width, height } = Dimensions.get('window');
 export default function FaceScanScreen() {
   const router = useRouter();
   const { session_id, location_bypassed, location_distance } = useLocalSearchParams();
-  const [hasPermission, setHasPermission] = useState(null);
+  const [permission, requestPermission] = useCameraPermissions();
   const [isScanning, setIsScanning] = useState(false);
-  const [camera, setCamera] = useState(null);
+  const cameraRef = useRef(null);
 
   useEffect(() => {
-    (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
-  }, []);
+    if (permission && !permission.granted && permission.canAskAgain) {
+      requestPermission();
+    }
+  }, [permission]);
 
   const handleStartScan = async () => {
     setIsScanning(true);
@@ -54,7 +53,8 @@ export default function FaceScanScreen() {
     }, 3000);
   };
 
-  if (hasPermission === null) {
+  // Permission still loading
+  if (!permission) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.permissionContainer}>
@@ -68,7 +68,8 @@ export default function FaceScanScreen() {
     );
   }
 
-  if (hasPermission === false) {
+  // Permission explicitly denied
+  if (!permission.granted) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.permissionContainer}>
@@ -77,13 +78,23 @@ export default function FaceScanScreen() {
           <Text style={styles.permissionText}>
             Face scanning requires camera access. Please enable camera permission in your device settings to mark attendance.
           </Text>
-          <TouchableOpacity
-            style={styles.settingsButton}
-            onPress={() => Linking.openSettings()}
-          >
-            <Ionicons name="settings-outline" size={20} color="#fff" />
-            <Text style={styles.settingsButtonText}>Open Settings</Text>
-          </TouchableOpacity>
+          {permission.canAskAgain ? (
+            <TouchableOpacity
+              style={styles.settingsButton}
+              onPress={requestPermission}
+            >
+              <Ionicons name="camera" size={20} color="#fff" />
+              <Text style={styles.settingsButtonText}>Grant Permission</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.settingsButton}
+              onPress={() => Linking.openSettings()}
+            >
+              <Ionicons name="settings-outline" size={20} color="#fff" />
+              <Text style={styles.settingsButtonText}>Open Settings</Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={styles.backButtonAlt}
             onPress={() => router.back()}
@@ -120,17 +131,17 @@ export default function FaceScanScreen() {
         {/* Camera Preview */}
         <View style={styles.cameraContainer}>
           <View style={styles.cameraFrame}>
+            <CameraView
+              ref={cameraRef}
+              style={StyleSheet.absoluteFill}
+              facing="front"
+            />
             <View style={styles.scanArea}>
               {/* Corner decorations */}
               <View style={[styles.corner, styles.cornerTopLeft]} />
               <View style={[styles.corner, styles.cornerTopRight]} />
               <View style={[styles.corner, styles.cornerBottomLeft]} />
               <View style={[styles.corner, styles.cornerBottomRight]} />
-              
-              {/* Face icon */}
-              <View style={styles.faceIconContainer}>
-                <Ionicons name="happy-outline" size={80} color="#A855F7" />
-              </View>
             </View>
           </View>
           

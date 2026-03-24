@@ -1,67 +1,112 @@
 """
-Flask uygulama yapılandırması
+Flask application configuration.
+Never instantiate Config directly — use create_app(config_class=...).
 """
+
 import os
+from datetime import timedelta
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
 
+
 class Config:
-    """Temel yapılandırma"""
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
-    
-    # Dizinler
-    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-    STATIC_DIR = os.path.join(BASE_DIR, 'static')
-    FACES_DIR = os.path.join(STATIC_DIR, 'faces')
-    ATTENDANCE_DIR = os.path.join(STATIC_DIR, 'attendance')
-    
-    # Dosyalar
-    STUDENTS_DB = os.path.join(STATIC_DIR, 'students.json')
-    ATTENDANCE_RECORDS = os.path.join(ATTENDANCE_DIR, 'records.json')
-    
-    # Database Mode
-    USE_MONGODB = os.environ.get('USE_MONGODB', 'false').lower() == 'true'
-    
-    # MongoDB ayarları
-    MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/')
-    MONGODB_DATABASE = os.environ.get('MONGODB_DATABASE', 'smart_attendance')
-    
-    # JSON ayarları
-    JSON_BASE_DIR = os.environ.get('JSON_BASE_DIR', 'static')
-    
-    # Yüz tanıma ayarları
-    FACE_RECOGNITION_TOLERANCE = float(os.environ.get('FACE_RECOGNITION_TOLERANCE', '0.6'))
-    FACE_DETECTION_MODEL = os.environ.get('FACE_DETECTION_MODEL', 'hog')  # 'hog' veya 'cnn'
-    
-    # Flask ayarları
-    DEBUG = os.environ.get('DEBUG', 'true').lower() == 'true'
-    HOST = os.environ.get('HOST', '0.0.0.0')
-    PORT = int(os.environ.get('PORT', '5000'))
-    
-    # CORS ayarları
-    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',')
-    
-    # Logging ayarları
-    LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
-    LOG_FILE = os.environ.get('LOG_FILE', '')
+    # ── Environment ────────────────────────────────────────────────────────────
+    ENVIRONMENT = os.getenv("ENVIRONMENT", "development")  # 'development' | 'production'
+
+    # ── Secrets ────────────────────────────────────────────────────────────────
+    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
+    JWT_SECRET_KEY = SECRET_KEY
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+
+    # ── Database ───────────────────────────────────────────────────────────────
+    #   Supported drivers: 'json' | 'sqlite' | 'mongodb'
+    DB_DRIVER = os.getenv("DB_DRIVER", "json")
+
+    # JSON adapter
+    JSON_BASE_DIR = os.getenv("JSON_BASE_DIR", "static")
+
+    # SQLite adapter
+    SQLITE_PATH = os.getenv("SQLITE_PATH", "smart_attendance.db")
+
+    # MongoDB adapter
+    MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/")
+    MONGODB_DATABASE = os.getenv("MONGODB_DATABASE", "smart_attendance")
+
+    # ── Face Recognition ───────────────────────────────────────────────────────
+    FACE_RECOGNITION_TOLERANCE = float(os.getenv("FACE_RECOGNITION_TOLERANCE", "0.65"))
+    FACE_DETECTION_MODEL = os.getenv("FACE_DETECTION_MODEL", "hog")  # 'hog' | 'cnn'
+    FACE_FLAGGED_DISTANCE_MIN = float(os.getenv("FACE_FLAGGED_DISTANCE_MIN", "0.50"))
+    FACE_FLAGGED_DISTANCE_MAX = float(os.getenv("FACE_FLAGGED_DISTANCE_MAX", "0.65"))
+
+    # ── Geofence ───────────────────────────────────────────────────────────────
+    DEFAULT_GEOFENCE_RADIUS_M = int(os.getenv("DEFAULT_GEOFENCE_RADIUS_M", "40"))
+
+    # ── Attendance Engine ──────────────────────────────────────────────────────
+    ATTENDANCE_STEP_TIMEOUT_SECONDS = int(os.getenv("ATTENDANCE_STEP_TIMEOUT_SECONDS", "120"))
+
+    # ── CORS ───────────────────────────────────────────────────────────────────
+    CORS_ORIGINS = os.getenv(
+        "CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"
+    ).split(",")
+
+    # ── Server ─────────────────────────────────────────────────────────────────
+    DEBUG = os.getenv("DEBUG", "true").lower() == "true"
+    HOST = os.getenv("HOST", "0.0.0.0")
+    PORT = int(os.getenv("PORT", "5000"))
+
+    # ── Logging ────────────────────────────────────────────────────────────────
+    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+    LOG_FILE = os.getenv("LOG_FILE", "") or None
+
+    # ── Expo Push Notifications ────────────────────────────────────────────────
+    EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send"
+
+    @classmethod
+    def validate_production(cls):
+        """
+        Call this inside create_app() to enforce production-only constraints.
+        Raises ValueError if any critical setting is missing or insecure.
+        """
+        if cls.ENVIRONMENT != "production":
+            return
+
+        errors = []
+        if not cls.SECRET_KEY or cls.SECRET_KEY == "dev-secret-key-change-in-production":
+            errors.append("SECRET_KEY must be set to a strong random value in production.")
+        if cls.SECRET_KEY and len(cls.SECRET_KEY) < 32:
+            errors.append("SECRET_KEY must be at least 32 characters long.")
+        if cls.DEBUG:
+            errors.append("DEBUG must be False in production.")
+
+        if errors:
+            raise ValueError("Production configuration errors:\n" + "\n".join(f"  - {e}" for e in errors))
+
 
 class DevelopmentConfig(Config):
-    """Geliştirme ortamı yapılandırması"""
     DEBUG = True
-    TESTING = False
+    ENVIRONMENT = "development"
+
 
 class ProductionConfig(Config):
-    """Üretim ortamı yapılandırması"""
     DEBUG = False
-    TESTING = False
-    # Üretimde SECRET_KEY mutlaka değiştirilmeli!
+    ENVIRONMENT = "production"
 
-# Yapılandırma sözlüğü
-config = {
-    'development': DevelopmentConfig,
-    'production': ProductionConfig,
-    'default': DevelopmentConfig
+
+class TestingConfig(Config):
+    TESTING = True
+    DEBUG = True
+    ENVIRONMENT = "testing"
+    DB_DRIVER = "json"
+    JSON_BASE_DIR = "tests/fixtures"
+    SECRET_KEY = "test-secret-key-at-least-32-chars-long"
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=5)
+
+
+config_map = {
+    "development": DevelopmentConfig,
+    "production": ProductionConfig,
+    "testing": TestingConfig,
+    "default": DevelopmentConfig,
 }
-

@@ -25,10 +25,10 @@ export const hasLocationPermission = async () => {
 
 /**
  * Get the device's current GPS coordinates.
- * Throws if permission is not granted or location is unavailable.
+ * Returns the full Location object so callers can access mocked, altitude, etc.
  *
  * @param {{ accuracy?: Location.Accuracy, timeout?: number }} options
- * @returns {{ latitude: number, longitude: number, accuracy: number }}
+ * @returns {Location.LocationObject}
  */
 export const getCurrentLocation = async (options = {}) => {
   const granted = await hasLocationPermission();
@@ -39,21 +39,33 @@ export const getCurrentLocation = async (options = {}) => {
     }
   }
 
-  const location = await Location.getCurrentPositionAsync({
+  return await Location.getCurrentPositionAsync({
     accuracy: options.accuracy ?? Location.Accuracy.High,
-    timeInterval: options.timeout ?? 10000
+    timeInterval: options.timeout ?? 10000,
   });
+};
 
-  return {
-    latitude: location.coords.latitude,
-    longitude: location.coords.longitude,
-    accuracy: location.coords.accuracy
-  };
+/**
+ * Normalize speed value.
+ * iOS returns -1 when speed is unavailable; normalize to null.
+ * @param {number|null|undefined} rawSpeed
+ * @returns {number|null}
+ */
+const normalizeSpeed = (rawSpeed) => {
+  if (rawSpeed == null || rawSpeed < 0) return null;
+  return rawSpeed;
 };
 
 /**
  * Verify that the student is inside the classroom geofence.
  * Calls the Flask backend's POST /api/verify/location endpoint.
+ *
+ * Sends full GPS metadata so the backend can apply all heuristic checks:
+ *   - mocked flag (OS-level mock GPS detection)
+ *   - accuracy anomaly (< 5m is suspiciously precise)
+ *   - altitude zero (mock GPS apps omit altitude)
+ *   - speed spike
+ *   - GPS timestamp vs server receive time
  *
  * @param {string} sessionId  - Active attendance session UUID
  * @returns {{
@@ -61,25 +73,37 @@ export const getCurrentLocation = async (options = {}) => {
  *   distance_m: number|null,
  *   geofence_radius: number|null,
  *   room_name: string,
- *   latitude: number,
- *   longitude: number
+ *   step_id: string,
+ *   is_flagged: boolean,
+ *   flag_reason: string|null
  * }}
  */
 export const verifyLocation = async (sessionId) => {
-  // 1 — Get current GPS coordinates
-  const { latitude, longitude, accuracy } = await getCurrentLocation();
+  const location = await getCurrentLocation();
+  const { coords } = location;
 
-  // 2 — Send to backend for geofence check
-  const result = await apiAdapter.post('/verify/location', {
+  const payload = {
     session_id: sessionId,
-    latitude,
-    longitude
-  });
+    latitude: coords?.latitude,
+    longitude: coords?.longitude,
+    accuracy: coords?.accuracy ?? null,
+    altitude: coords?.altitude ?? null,
+    speed: normalizeSpeed(coords?.speed),
+    // GPS fix timestamp from device (ISO string) — used for replay attack detection
+    gps_timestamp: location.timestamp
+      ? new Date(location.timestamp).toISOString()
+      : null,
+    // Expo SDK 48+: OS-level mock GPS flag
+    mocked: location.mocked ?? false,
+  };
+
+  const result = await apiAdapter.post('/verify/location', payload);
 
   return {
     ...result,
-    latitude,
-    longitude,
-    gps_accuracy: accuracy
+    // Echo back raw coords for UI display
+    latitude: coords?.latitude,
+    longitude: coords?.longitude,
+    gps_accuracy: coords?.accuracy,
   };
 };

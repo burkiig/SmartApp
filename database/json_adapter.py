@@ -305,6 +305,52 @@ class JSONAdapter(DatabaseAdapter):
                 return excuses[i]
         raise ValueError(f"Excuse {excuse_id} not found")
 
+    # ==================== ATTENDANCE STEPS ====================
+
+    def get_attendance_step(self, step_id: str) -> Optional[Dict[str, Any]]:
+        steps = self._read_json(self._steps_file())
+        return next((s for s in steps if s.get('id') == step_id), None)
+
+    def create_attendance_step(self, step_data: Dict[str, Any]) -> Dict[str, Any]:
+        steps = self._read_json(self._steps_file())
+        steps = [s for s in steps if not (
+            s.get('student_username') == step_data.get('student_username') and
+            s.get('session_id') == step_data.get('session_id')
+        )]
+        steps.append(step_data)
+        self._write_json(self._steps_file(), steps)
+        return step_data
+
+    def update_attendance_step(self, step_id: str, update_data: Dict[str, Any]) -> Dict[str, Any]:
+        steps = self._read_json(self._steps_file())
+        for i, s in enumerate(steps):
+            if s.get('id') == step_id:
+                steps[i].update(update_data)
+                self._write_json(self._steps_file(), steps)
+                return steps[i]
+        raise ValueError(f"Step {step_id} not found")
+
+    def delete_attendance_step(self, step_id: str) -> bool:
+        steps = self._read_json(self._steps_file())
+        new_steps = [s for s in steps if s.get('id') != step_id]
+        self._write_json(self._steps_file(), new_steps)
+        return True
+
+    def delete_expired_attendance_steps(self) -> int:
+        from datetime import datetime
+        steps = self._read_json(self._steps_file())
+        now = datetime.now().isoformat()
+        valid = [s for s in steps if s.get('expires_at', '9999') >= now]
+        deleted = len(steps) - len(valid)
+        if deleted:
+            self._write_json(self._steps_file(), valid)
+        return deleted
+
+    def _steps_file(self) -> str:
+        path = os.path.join(self.base_dir, 'attendance_steps.json')
+        self._init_file(path, [])
+        return path
+
     # ==================== UTILITY ====================
 
     def health_check(self) -> Dict[str, Any]:
