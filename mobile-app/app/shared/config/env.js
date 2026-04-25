@@ -7,16 +7,22 @@ import Constants from 'expo-constants';
 
 const ENV = {
     development: {
-        // SECENEK 1 — Yerel IP (aynı WiFi ağındaysanız):
+        // Geliştirme ortamı için API URL'sini ayarlayın:
+        //
+        // SECENEK 1 — Yerel geliştirme (Android emülatör veya aynı makine):
+        //   API_URL: 'http://10.0.2.2:5000'   // Android emülatör
+        //   API_URL: 'http://localhost:5000'   // iOS simülatör
+        //
+        // SECENEK 2 — Yerel IP (aynı WiFi ağındaysanız):
         //   ipconfig komutuyla IPv4 adresinizi bulun, buraya yazın.
-        //   Mevcut IP: 192.168.1.100
+        //   API_URL: 'http://192.168.x.x:5000'
         //
-        // SECENEK 2 — ngrok (önerilen, IP değişse de çalışır):
+        // SECENEK 3 — ngrok (önerilen, IP değişse de çalışır):
         //   ngrok http 5000 → http://localhost:4040 → HTTPS URL'yi kopyalayın.
-        //   Örnek: 'https://abc123.ngrok-free.app'
+        //   API_URL: 'https://xxxx-xxxx.ngrok-free.app'
         //
-        // NGROK KULLANIYORSANIZ aşağıdaki satırı ngrok URL ile değiştirin:
-        API_URL: 'https://nongospel-aerially-tressa.ngrok-free.dev/',
+        // UYARI: Gerçek URL'leri bu dosyaya yazmayın — .env.local kullanın.
+        API_URL: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000',
         ENABLE_DEVTOOLS: true,
         LOG_LEVEL: 'debug'
     },

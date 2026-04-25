@@ -1,28 +1,39 @@
-# Environment variables
+# ── Environment & Secrets ────────────────────────────────────────────────────
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+.env.staging
+*.secret
+*.secrets
+secrets/
 
-# Python
+# ── Python ───────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
 *.pyc
+*.pyo
 
-# Virtual environments
+# ── Virtual Environments ─────────────────────────────────────────────────────
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+.venv/
+.venv*/
+venv*/
+.python-version
 
-# Flask
+# ── Flask ────────────────────────────────────────────────────────────────────
 instance/
 .webassets-cache
 
-# Build and distribution
+# ── Build & Distribution ─────────────────────────────────────────────────────
 build/
 develop-eggs/
 dist/
@@ -40,53 +51,86 @@ wheels/
 *.egg
 MANIFEST
 
-# IDE
-.vscode/
+# ── IDE — JetBrains (PyCharm, IntelliJ, etc.) ────────────────────────────────
 .idea/
+*.iml
+*.iws
+
+# ── IDE — Visual Studio / VS Code ────────────────────────────────────────────
+.vscode/
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# ── IDE — General ─────────────────────────────────────────────────────────────
 *.swp
 *.swo
 *~
-.DS_Store
 
-# Node
+# ── Node / React / Expo ──────────────────────────────────────────────────────
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .expo/
+.expo-shared/
+*.orig.*
+web-build/
+.pnp
+.pnp.js
 
-# Application specific
+# ── Runtime / Live JSON Database Files ───────────────────────────────────────
+# These files hold live application data and PII; commit only schema/fixtures
+static/sessions.json
+static/excuses.json
+static/cancellations.json
+static/attendance_steps.json
 static/faces/
 static/attendance/
+
+# ── Seeded / Example Data (commit .example versions instead) ─────────────────
 static/students.json
 static/users.json
 static/courses.json
 static/rooms.json
 
-# Logs
+# ── Logs ─────────────────────────────────────────────────────────────────────
 *.log
 logs/
 
-# Database
+# ── Database ─────────────────────────────────────────────────────────────────
 *.db
 *.sqlite
 *.sqlite3
 
-# OS
+# ── OS ───────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Testing
+# ── Testing ──────────────────────────────────────────────────────────────────
 .pytest_cache/
 .coverage
 htmlcov/
 .tox/
 
-# Jupyter Notebook
+# ── Jupyter Notebook ─────────────────────────────────────────────────────────
 .ipynb_checkpoints
 
-# Redis
+# ── Redis ────────────────────────────────────────────────────────────────────
 dump.rdb
 
-# MinIO/S3
+# ── MinIO / S3 ───────────────────────────────────────────────────────────────
 .minio/
+
+# ── Root-level package-lock (no corresponding package.json) ──────────────────
+/package-lock.json
+
+# ── Cursor / Editor workspace assets ─────────────────────────────────────────
+assets/
+
+# ── Internal documentation (not for public repo) ─────────────────────────────
+database_mimarisi.txt
