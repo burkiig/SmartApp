@@ -9,7 +9,10 @@
 *.secrets
 secrets/
 
-# ── Python ───────────────────────────────────────────────────────────────────
+# Frontend panel (separate repository)
+web-panel/
+
+# Python
 __pycache__/
 *.py[cod]
 *$py.class

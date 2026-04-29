@@ -1,2 +1,0 @@
-export { RecordsPage } from './RecordsPage';
-
