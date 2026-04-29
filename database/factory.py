@@ -44,6 +44,16 @@ def _create_adapter() -> "DatabaseAdapter":
             port=int(os.getenv("DB_PORT", "5432")),
         )
 
+    if driver == "mysql":
+        from .mysql_adapter import MySQLAdapter
+        return MySQLAdapter(
+            host=os.getenv("DB_HOST", "localhost"),
+            database=os.getenv("DB_NAME", "smart_attendance"),
+            user=os.getenv("DB_USER", "root"),
+            password=os.getenv("DB_PASSWORD", ""),
+            port=int(os.getenv("DB_PORT", "3306")),
+        )
+
     # Default: JSON
     from .json_adapter import JSONAdapter
     return JSONAdapter(base_dir=os.getenv("JSON_BASE_DIR", "static"))

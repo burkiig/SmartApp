@@ -27,7 +27,10 @@ const ENV = {
         LOG_LEVEL: 'debug'
     },
     production: {
-        API_URL: 'https://api.smartattendance.com',
+        // AWS EC2 Ubuntu deployment
+        // Replace YOUR_AWS_EC2_PUBLIC_IP with your actual AWS EC2 public IP address
+        // Example: API_URL: 'http://54.123.456.789:8000'
+        API_URL: process.env.EXPO_PUBLIC_API_URL || 'http://YOUR_AWS_EC2_PUBLIC_IP:8000',
         ENABLE_DEVTOOLS: false,
         LOG_LEVEL: 'error'
     }
