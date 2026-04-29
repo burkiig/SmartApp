@@ -34,6 +34,16 @@ def _create_adapter() -> "DatabaseAdapter":
             database_name=os.getenv("MONGODB_DATABASE", "smart_attendance"),
         )
 
+    if driver == "postgresql":
+        from .postgresql_adapter import PostgreSQLAdapter
+        return PostgreSQLAdapter(
+            host=os.getenv("DB_HOST", "localhost"),
+            database=os.getenv("DB_NAME", "smart_attendance"),
+            user=os.getenv("DB_USER", "postgres"),
+            password=os.getenv("DB_PASSWORD", ""),
+            port=int(os.getenv("DB_PORT", "5432")),
+        )
+
     # Default: JSON
     from .json_adapter import JSONAdapter
     return JSONAdapter(base_dir=os.getenv("JSON_BASE_DIR", "static"))

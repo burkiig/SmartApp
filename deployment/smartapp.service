@@ -1,0 +1,59 @@
+[Unit]
+Description=SmartApp Attendance System - Production Service
+After=network-online.target mongodb.service
+Wants=network-online.target
+Documentation=https://github.com/your-org/SmartApp
+
+[Service]
+Type=notify
+User=smartapp
+Group=smartapp
+WorkingDirectory=/opt/smartapp
+
+# Environment configuration
+EnvironmentFile=/opt/smartapp/.env
+Environment="PATH=/opt/smartapp/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
+
+# Main process
+ExecStart=/opt/smartapp/venv/bin/gunicorn \
+    -c /opt/smartapp/deployment/gunicorn_production.conf.py \
+    "app:create_app()"
+
+# Process management - restart on failure
+Restart=on-failure
+RestartSec=10s
+StartLimitInterval=60s
+StartLimitBurst=3
+
+# Kill process handling
+KillMode=mixed
+KillSignal=SIGQUIT
+TimeoutStopSec=30s
+
+# Process isolation & security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictRealtime=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+ReadWritePaths=/var/lib/smartapp /var/log/smartapp /var/run/smartapp /tmp
+
+# Resource limits
+Limit NOFILE=65535:65535
+Limit NPROC=4096:4096
+MemoryLimit=2G
+CPUQuota=80%
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=smartapp
+
+[Install]
+WantedBy=multi-user.target

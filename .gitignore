@@ -12,6 +12,9 @@ secrets/
 # Frontend panel (separate repository)
 web-panel/
 
+# Embedded repository
+SmartApp/
+
 # Python
 __pycache__/
 *.py[cod]

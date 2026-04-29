@@ -34,6 +34,13 @@ class Config:
     MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/")
     MONGODB_DATABASE = os.getenv("MONGODB_DATABASE", "smart_attendance")
 
+    # PostgreSQL adapter
+    DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_NAME = os.getenv("DB_NAME", "smart_attendance")
+    DB_USER = os.getenv("DB_USER", "postgres")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+    DB_PORT = int(os.getenv("DB_PORT", "5432"))
+
     # ── Face Recognition ───────────────────────────────────────────────────────
     FACE_RECOGNITION_TOLERANCE = float(os.getenv("FACE_RECOGNITION_TOLERANCE", "0.65"))
     FACE_DETECTION_MODEL = os.getenv("FACE_DETECTION_MODEL", "hog")  # 'hog' | 'cnn'
